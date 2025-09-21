@@ -72,7 +72,7 @@
       .append('marker')
       .attr('id', 'arrowhead')
       .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 18)
+      .attr('refX', 26)
       .attr('refY', 0)
       .attr('markerWidth', 6)
       .attr('markerHeight', 6)
@@ -89,9 +89,9 @@
         d3
           .forceLink<Node, Link>()
           .id((d) => d.id)
-          .distance(150),
+          .distance(200),
       )
-      .force('charge', d3.forceManyBody().strength(-300).distanceMax(500))
+      .force('charge', d3.forceManyBody().strength(-400))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     updateGraph();
@@ -117,10 +117,29 @@
 
     const node = g.selectAll<SVGCircleElement, Node>('circle').data(nodes, (d) => d.id);
 
-    const imageSize = 30;
+    const imageSize = 40;
     node.join(
       (enter) => {
-        const enterNode = enter.append('g');
+        const enterNode = enter.append('g').call(
+            d3
+              .drag<SVGGElement, Node>()
+              .on('start', (event, d) => {
+                if (!simulation) return;
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                (d as any).fx = (d as any).x;
+                (d as any).fy = (d as any).y;
+              })
+              .on('drag', (event, d) => {
+                (d as any).fx = event.x;
+                (d as any).fy = event.y;
+              })
+              .on('end', (event, d) => {
+                if (!simulation) return;
+                if (!event.active) simulation.alphaTarget(0);
+                (d as any).fx = null;
+                (d as any).fy = null;
+              }),
+          );
 
         enterNode
           .append('image')
@@ -128,13 +147,14 @@
           .attr('x', -imageSize / 2)
           .attr('y', -imageSize / 2)
           .attr('height', imageSize)
-          .attr('width', imageSize);
+          .attr('width', imageSize)
+          ;
 
         enterNode
           .append('text')
           .raise()
           .text((d) => d.id)
-          .attr('dy', imageSize / 2 + 10)
+          .attr('dy', imageSize / 2 + 14)
           .classed('graph-label', true);
 
         return enterNode;
@@ -179,5 +199,5 @@
 
 <div bind:this={container} class="h-full w-full"></div>
 <div class="absolute top-0 left-0 p-4">
-  <button onclick={fitGraph}>Fit Graph</button>
+  <button onclick={fitGraph}>Fit to screen</button>
 </div>

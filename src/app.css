@@ -21,7 +21,7 @@
 
 .graph-link {
   stroke: var(--color-foreground);
-  stroke-opacity: 0.25;
+  stroke-opacity: 0.15;
   stroke-width: 2px;
   z-index: -1000;
   marker-end: url(#arrowhead)
@@ -29,11 +29,12 @@
 
 .graph-label {
   fill: var(--color-foreground);
-  font-size: 10px;
+  font-size: 14px;
   text-anchor: middle;
   z-index: 1000;
 }
 
 .graph-arrowhead {
   fill: var(--color-foreground);
+  fill-opacity: 0.75;
 }
