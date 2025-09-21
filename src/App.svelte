@@ -6,10 +6,15 @@
   type Stage = 'start' | 'graph';
 
   let stage = $state<Stage>('start');
-  let isFetching = $state<boolean>(false);
   let initHandle = $state<string>('teatov.xyz');
+
   let errorMessage = $state<string | null>(null);
   let infoMessage = $state<string | null>(null);
+
+  let isFetching = $state<boolean>(false);
+  let currentHandle = $state<string>('');
+  let currentPage = $state<number>(0);
+  let currentQueueLength = $state<number>(0);
 
   let initNodes = $state<Node[]>([]);
   let initLinks = $state<Link[]>([]);
@@ -17,7 +22,7 @@
   // svelte-ignore non_reactive_update
   let graph: Graph;
 
-  type QueueItem = { handle: string; depth: number };
+  type QueueItem = { handle: string; depth: number; image?: string };
   const queue: QueueItem[] = [];
   const addedHandles = new Set<string>();
   const visitedHandles = new Set<string>();
@@ -52,9 +57,9 @@
 
     initNodes.push({ id: initHandle, image: profile.avatar });
     addedHandles.add(initHandle);
-    // stage = 'graph';
+    stage = 'graph';
 
-    queue.push({ handle: initHandle, depth: 0 });
+    queue.push({ handle: initHandle, depth: 0, image: profile.avatar });
 
     while (queue.length > 0) {
       const item = queue.shift()!;
@@ -64,7 +69,6 @@
       visitedHandles.add(item.handle);
       await fetchFollows(item);
     }
-    stage = 'graph';
 
     resetState();
   }
@@ -72,9 +76,11 @@
   async function fetchFollows(source: QueueItem) {
     let cursor: string | undefined = undefined;
     let finished = false;
+    currentPage = 0;
+    currentQueueLength = queue.length;
 
     while (!finished) {
-      console.log(queue.length, source.handle, cursor);
+      currentHandle = source.handle;
       const follows = await getFollows(source.handle, limit, cursor);
       if (!follows) {
         resetState();
@@ -86,19 +92,34 @@
 
       follows.follows.forEach((target) => {
         if (source.depth + 1 <= maxDepth) {
-          queue.push({ handle: target.handle, depth: source.depth + 1 });
+          queue.push({
+            handle: target.handle,
+            depth: source.depth + 1,
+            image: target.avatar,
+          });
         }
       });
 
       const newNodes: Node[] = [];
       const newLinks: Link[] = [];
+      if (!addedHandles.has(source.handle)) {
+        newNodes.push({
+          id: source.handle,
+          image: source.image,
+        });
+        addedHandles.add(source.handle);
+      }
+
       follows.follows.forEach((target) => {
+        if (source.handle === initHandle) {
+          return;
+        }
         if (source.depth >= maxDepth && !addedHandles.has(target.handle)) {
           return;
         }
 
         const link = `${source.handle}-${target.handle}`;
-        if (!addedLinks.has(link) && source.handle !== initHandle) {
+        if (!addedLinks.has(link)) {
           newLinks.push({
             source: source.handle,
             target: target.handle,
@@ -115,9 +136,13 @@
         }
       });
 
-      // graph.addData(newNodes, newLinks);
-      initNodes = [...initNodes, ...newNodes];
-      initLinks = [...initLinks, ...newLinks];
+      if (newNodes.length > 0 || newLinks.length > 0) {
+        graph.addData(newNodes, newLinks);
+      }
+      // initNodes = [...initNodes, ...newNodes];
+      // initLinks = [...initLinks, ...newLinks];
+
+      currentPage++;
       if (!follows.cursor) {
         finished = true;
       }
@@ -159,8 +184,10 @@
   <Graph {initNodes} {initLinks} bind:this={graph} />
 
   {#if isFetching}
-    <div class="absolute top-0 right-0 left-0 p-4 text-center">
-      Fetching follows for {initHandle}...
+    <div class="pointer-events-none absolute top-0 right-0 left-0 p-4 text-center">
+      ({currentQueueLength} remaining) Fetching follows for:<br />{currentHandle}...{'.'.repeat(
+        currentPage,
+      )}
     </div>
   {/if}
   {#if errorMessage}
