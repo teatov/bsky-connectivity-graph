@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { max } from 'd3';
   import { getFollows, getProfile } from './lib';
   import Graph, { type Link, type Node } from './lib/components/graph.svelte';
 
