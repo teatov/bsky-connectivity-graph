@@ -28,6 +28,7 @@
     "vite": "^7.1.6"
   },
   "dependencies": {
+    "@atproto/api": "^0.16.9",
     "@tailwindcss/vite": "^4.1.13",
     "@types/d3": "^7.4.3",
     "d3": "^7.9.0",

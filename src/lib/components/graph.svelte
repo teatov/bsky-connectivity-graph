@@ -24,6 +24,9 @@
   let container: HTMLDivElement;
   let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
   let simulation: d3.Simulation<Node, undefined>;
+  let node: d3.Selection<SVGCircleElement, Node, SVGGElement, unknown>;
+  let link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
+  let label: d3.Selection<SVGTextElement, Node, SVGGElement, unknown>;
   let zoom: d3.ZoomBehavior<SVGSVGElement, unknown>;
 
   onMount(() => {
@@ -31,8 +34,7 @@
       throw new Error('"container" is somehow not bound');
     }
 
-    const { width, height } = getContainerSize();
-    createGraph(width, height);
+    createGraph();
 
     return () => {
       if (simulation) simulation.stop();
@@ -46,7 +48,8 @@
     return { width, height };
   }
 
-  function createGraph(width: number, height: number) {
+  function createGraph() {
+    const { width, height } = getContainerSize();
     container.innerHTML = '';
 
     svg = d3
@@ -66,29 +69,32 @@
       });
     svg.call(zoom);
 
+    const startNodes = [...nodes];
+    const startLinks = [...links];
+
     simulation = d3
-      .forceSimulation<Node>(nodes)
+      .forceSimulation<Node>(startNodes)
       .force(
         'link',
         d3
-          .forceLink<Node, Link>(links)
+          .forceLink<Node, Link>(startLinks)
           .id((d) => d.id)
           .distance(100),
       )
       .force('charge', d3.forceManyBody<Node>().strength(-200))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
-    const link = g
+    link = g
       .append('g')
       .selectAll<SVGLineElement, Link>('line')
-      .data(links)
+      .data(startLinks)
       .join('line')
       .classed('graph-link', true);
 
-    const node = g
+    node = g
       .append('g')
       .selectAll<SVGCircleElement, Node>('circle')
-      .data(nodes)
+      .data(startNodes)
       .join('circle')
       .attr('r', 8)
       .classed('graph-node', true)
@@ -107,10 +113,10 @@
           }),
       );
 
-    const label = g
+    label = g
       .append('g')
       .selectAll<SVGTextElement, Node>('text')
-      .data(nodes)
+      .data(startNodes)
       .join('text')
       .text((d) => d.id)
       .attr('dy', -12)
