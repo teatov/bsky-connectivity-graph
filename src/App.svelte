@@ -51,7 +51,7 @@
     }
 
     initNodes.push({ id: initHandle, image: profile.avatar });
-    stage = 'graph';
+    // stage = 'graph';
 
     queue.push({ handle: initHandle, depth: 0 });
 
@@ -61,11 +61,8 @@
         continue;
       }
       await fetchFollows(item);
-      if (item.depth === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1 * 1000));
-        graph.clearLinks();
-      }
     }
+    stage = 'graph';
 
     resetState();
   }
@@ -94,10 +91,7 @@
       const newNodes: Node[] = [];
       const newLinks: Link[] = [];
       follows.follows.forEach((profile) => {
-        if (
-          profile.handle === initHandle ||
-          (item.depth >= maxDepth && !allHandles.has(profile.handle))
-        ) {
+        if (item.depth >= maxDepth && !allHandles.has(profile.handle)) {
           return;
         }
         if (!allHandles.has(profile.handle)) {
@@ -108,7 +102,7 @@
           allHandles.add(profile.handle);
         }
         const link = `${item.handle}-${profile.handle}`;
-        if (!visitedLinks.has(link)) {
+        if (!visitedLinks.has(link) && item.handle !== initHandle) {
           newLinks.push({
             source: item.handle,
             target: profile.handle,
@@ -117,7 +111,10 @@
         }
       });
 
-      graph.addData(newNodes, newLinks);
+      // graph.addData(newNodes, newLinks);
+      initNodes = [...initNodes, ...newNodes];
+      initLinks = [...initLinks, ...newLinks];
+      // console.log(initNodes);
       if (follows.follows.length < limit) {
         finished = true;
       }
