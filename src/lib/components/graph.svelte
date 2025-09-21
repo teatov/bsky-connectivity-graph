@@ -19,37 +19,30 @@
   import * as d3 from 'd3';
   import { onMount } from 'svelte';
 
-  let { nodes, links }: { nodes: Node[]; links: Link[] } = $props();
+  let { initNodes, initLinks }: { initNodes: Node[]; initLinks: Link[] } = $props();
+  let nodes: Node[] = [];
+  let links: Link[] = [];
 
   let container: HTMLDivElement;
   let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  let simulation: d3.Simulation<Node, undefined>;
-  let node: d3.Selection<SVGCircleElement, Node, SVGGElement, unknown>;
-  let link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
-  let label: d3.Selection<SVGTextElement, Node, SVGGElement, unknown>;
+  let g: d3.Selection<SVGGElement, unknown, null, undefined>;
   let zoom: d3.ZoomBehavior<SVGSVGElement, unknown>;
+  let simulation: d3.Simulation<Node, Link>;
+
+  export function addData(newNodes: Node[], newLinks: Link[]) {
+    console.log(newNodes);
+    links = [...links, ...newLinks];
+    nodes = [...nodes, ...newNodes];
+    updateGraph();
+  }
 
   onMount(() => {
     if (!container) {
       throw new Error('"container" is somehow not bound');
     }
 
-    createGraph();
-
-    return () => {
-      if (simulation) simulation.stop();
-    };
-  });
-
-  function getContainerSize() {
-    const rect = container.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    return { width, height };
-  }
-
-  function createGraph() {
-    const { width, height } = getContainerSize();
+    links = [...initLinks];
+    nodes = [...initNodes];
     container.innerHTML = '';
 
     svg = d3
@@ -59,7 +52,7 @@
       .attr('height', '100%')
       .attr('preserveAspectRatio', 'xMidYMid meet');
 
-    const g = svg.append('g');
+    g = svg.append('g');
 
     zoom = d3
       .zoom<SVGSVGElement, unknown>()
@@ -69,69 +62,94 @@
       });
     svg.call(zoom);
 
-    const startNodes = [...nodes];
-    const startLinks = [...links];
+    svg
+      .append('defs')
+      .append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 16)
+      .attr('refY', 0)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .classed('graph-arrowhead', true);
 
+    const { width, height } = getContainerSize();
     simulation = d3
-      .forceSimulation<Node>(startNodes)
+      .forceSimulation<Node, Link>()
       .force(
         'link',
         d3
-          .forceLink<Node, Link>(startLinks)
+          .forceLink<Node, Link>()
           .id((d) => d.id)
           .distance(100),
       )
-      .force('charge', d3.forceManyBody<Node>().strength(-200))
+      .force('charge', d3.forceManyBody().strength(-200))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
-    link = g
-      .append('g')
+    updateGraph();
+  });
+
+  function getContainerSize() {
+    const rect = container.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    return { width, height };
+  }
+
+  function updateGraph() {
+    const link = g
       .selectAll<SVGLineElement, Link>('line')
-      .data(startLinks)
-      .join('line')
-      .classed('graph-link', true);
+      .data(links, (d: any) => `${d.source}-${d.target}`);
 
-    node = g
-      .append('g')
-      .selectAll<SVGCircleElement, Node>('circle')
-      .data(startNodes)
-      .join('circle')
-      .attr('r', 8)
-      .classed('graph-node', true)
-      .call(
-        d3
-          .drag<SVGCircleElement, Node>()
-          .on('start', (event, d) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-          })
-          .on('end', (event, d) => {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-          }),
-      );
+    link.join(
+      (enter) => enter.insert('line', ':first-child').classed('graph-link', true),
+      (update) => update,
+      (exit) => exit.remove(),
+    );
 
-    label = g
-      .append('g')
-      .selectAll<SVGTextElement, Node>('text')
-      .data(startNodes)
-      .join('text')
-      .text((d) => d.id)
-      .attr('dy', -12)
-      .classed('graph-label', true);
+    const node = g.selectAll<SVGCircleElement, Node>('circle').data(nodes, (d) => d.id);
 
-    simulation.on('tick', () => {
-      link
+    node.join(
+      (enter) => enter.append('circle').attr('r', 10).classed('graph-node', true),
+      (update) => update,
+      (exit) => exit.remove(),
+    );
+
+    const label = g.selectAll<SVGTextElement, Node>('text').data(nodes, (d) => d.id);
+
+    label.join(
+      (enter) =>
+        enter
+          .append('text')
+          .raise()
+          .text((d) => d.id)
+          .attr('dy', -12)
+          .classed('graph-label', true),
+      (update) => update.text((d) => d.id),
+      (exit) => exit.remove(),
+    );
+
+    simulation.nodes(nodes).on('tick', () => {
+      g.selectAll<SVGLineElement, Link>('line')
         .attr('x1', (d) => (typeof d.source === 'string' ? 0 : (d.source.x ?? 0)))
         .attr('y1', (d) => (typeof d.source === 'string' ? 0 : (d.source.y ?? 0)))
         .attr('x2', (d) => (typeof d.target === 'string' ? 0 : (d.target.x ?? 0)))
         .attr('y2', (d) => (typeof d.target === 'string' ? 0 : (d.target.y ?? 0)));
 
-      node.attr('cx', (d) => d.x ?? 0).attr('cy', (d) => d.y ?? 0);
-      label.attr('x', (d) => d.x ?? 0).attr('y', (d) => d.y ?? 0);
+      g.selectAll<SVGCircleElement, Node>('circle')
+        .attr('cx', (d) => d.x ?? 0)
+        .attr('cy', (d) => d.y ?? 0);
+
+      g.selectAll<SVGTextElement, Node>('text')
+        .attr('x', (d) => d.x ?? 0)
+        .attr('y', (d) => d.y ?? 0);
     });
+    (simulation.force('link') as d3.ForceLink<Node, Link>).links(links);
+
+    simulation.alpha(1).restart();
   }
 
   function fitGraph() {

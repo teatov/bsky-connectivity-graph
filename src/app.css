@@ -9,10 +9,10 @@
 
 @layer base {
   * {
-    @apply focus-visible:ring-foreground focus-visible:ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-4;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-background;
   }
   body {
-    @apply bg-background text-foreground relative h-screen;
+    @apply relative h-screen bg-background text-foreground;
   }
   button {
     @apply cursor-pointer;
@@ -26,13 +26,20 @@
 }
 
 .graph-link {
-  stroke: #999;
-  stroke-opacity: 0.6;
+  stroke: var(--color-foreground);
+  stroke-opacity: 0.5;
   stroke-width: 2px;
+  z-index: -1000;
+  marker-end: url(#arrowhead)
 }
 
 .graph-label {
   fill: var(--color-foreground);
   font-size: 12px;
   text-anchor: middle;
+  z-index: 1000;
+}
+
+.graph-arrowhead {
+  fill: var(--color-foreground);
 }

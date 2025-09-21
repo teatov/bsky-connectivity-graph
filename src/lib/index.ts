@@ -16,3 +16,18 @@ export async function getProfile(handle: string) {
     return null;
   }
 }
+
+export async function getFollows(handle: string) {
+  try {
+    const response = await agent.getFollows({ actor: handle });
+    if (response.success) {
+      return response.data;
+    } else {
+      console.error(response);
+      return null;
+    }
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
