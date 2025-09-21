@@ -3,15 +3,16 @@
 @theme {
   --color-background: #15171a;
   --color-foreground: #d5dce4;
-  --color-primary: #7bf1d4;
+  --color-secondary: #808892;
+  --color-danger: #da577e;
 }
 
 @layer base {
   * {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background;
+    @apply focus-visible:ring-foreground focus-visible:ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-4;
   }
   body {
-    @apply relative h-screen bg-background text-foreground;
+    @apply bg-background text-foreground relative h-screen;
   }
   button {
     @apply cursor-pointer;
