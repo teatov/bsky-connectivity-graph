@@ -19,9 +19,9 @@
 
   type QueueItem = { handle: string; depth: number };
   const queue: QueueItem[] = [];
-  const allHandles = new Set<string>();
+  const addedHandles = new Set<string>();
   const visitedHandles = new Set<string>();
-  const visitedLinks = new Set<string>();
+  const addedLinks = new Set<string>();
 
   const maxDepth = 1;
   const limit = 100;
@@ -51,6 +51,7 @@
     }
 
     initNodes.push({ id: initHandle, image: profile.avatar });
+    addedHandles.add(initHandle);
     // stage = 'graph';
 
     queue.push({ handle: initHandle, depth: 0 });
@@ -60,6 +61,7 @@
       if (visitedHandles.has(item.handle) || item.depth > maxDepth) {
         continue;
       }
+      visitedHandles.add(item.handle);
       await fetchFollows(item);
     }
     stage = 'graph';
@@ -67,55 +69,56 @@
     resetState();
   }
 
-  async function fetchFollows(item: QueueItem) {
-    visitedHandles.add(item.handle);
-    allHandles.add(item.handle);
+  async function fetchFollows(source: QueueItem) {
     let cursor: string | undefined = undefined;
     let finished = false;
 
     while (!finished) {
-      console.log(item.handle, cursor);
-      const follows = await getFollows(item.handle, limit, cursor);
+      console.log(queue.length, source.handle, cursor);
+      const follows = await getFollows(source.handle, limit, cursor);
       if (!follows) {
         resetState();
-        errorMessage = `Error fetching follows for ${item.handle}`;
+        errorMessage = `Error fetching follows for ${source.handle}`;
         return;
       }
 
       cursor = follows.cursor;
 
-      follows.follows.forEach((profile) =>
-        queue.push({ handle: profile.handle, depth: item.depth + 1 }),
-      );
+      follows.follows.forEach((target) => {
+        if (source.depth + 1 <= maxDepth) {
+          queue.push({ handle: target.handle, depth: source.depth + 1 });
+        }
+      });
 
       const newNodes: Node[] = [];
       const newLinks: Link[] = [];
-      follows.follows.forEach((profile) => {
-        if (item.depth >= maxDepth && !allHandles.has(profile.handle)) {
+      follows.follows.forEach((target) => {
+        if (source.depth >= maxDepth && !addedHandles.has(target.handle)) {
           return;
         }
-        if (!allHandles.has(profile.handle)) {
-          newNodes.push({
-            id: profile.handle,
-            image: profile.avatar,
-          });
-          allHandles.add(profile.handle);
-        }
-        const link = `${item.handle}-${profile.handle}`;
-        if (!visitedLinks.has(link) && item.handle !== initHandle) {
+
+        const link = `${source.handle}-${target.handle}`;
+        if (!addedLinks.has(link) && source.handle !== initHandle) {
           newLinks.push({
-            source: item.handle,
-            target: profile.handle,
+            source: source.handle,
+            target: target.handle,
           });
-          visitedLinks.add(link);
+          addedLinks.add(link);
+        }
+
+        if (!addedHandles.has(target.handle)) {
+          newNodes.push({
+            id: target.handle,
+            image: target.avatar,
+          });
+          addedHandles.add(target.handle);
         }
       });
 
       // graph.addData(newNodes, newLinks);
       initNodes = [...initNodes, ...newNodes];
       initLinks = [...initLinks, ...newLinks];
-      // console.log(initNodes);
-      if (follows.follows.length < limit) {
+      if (!follows.cursor) {
         finished = true;
       }
     }
