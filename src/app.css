@@ -17,3 +17,21 @@
     @apply cursor-pointer;
   }
 }
+
+.graph-node {
+  fill: #69b3a2;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.graph-link {
+  stroke: #999;
+  stroke-opacity: 0.6;
+  stroke-width: 2px;
+}
+
+.graph-label {
+  fill: var(--color-foreground);
+  font-size: 12px;
+  text-anchor: middle;
+}
