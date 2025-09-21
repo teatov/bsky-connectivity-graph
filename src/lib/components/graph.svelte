@@ -97,7 +97,7 @@
       )
       .force('charge', d3.forceManyBody().strength(-150).distanceMax(250))
       .force('center', d3.forceCenter(0, 0))
-      .force('collide', d3.forceCollide().radius(25));
+      .force('collide', d3.forceCollide().radius(35));
 
     updateGraph();
   });
