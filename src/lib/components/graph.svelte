@@ -36,6 +36,11 @@
     updateGraph();
   }
 
+  export function clearLinks() {
+    links = [];
+    updateGraph();
+  }
+
   onMount(() => {
     if (!container) {
       throw new Error('"container" is somehow not bound');
@@ -56,7 +61,7 @@
 
     zoom = d3
       .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.5, 5])
+      .scaleExtent([0.1, 5])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
@@ -84,9 +89,9 @@
         d3
           .forceLink<Node, Link>()
           .id((d) => d.id)
-          .distance(100),
+          .distance(150),
       )
-      .force('charge', d3.forceManyBody().strength(-1000))
+      .force('charge', d3.forceManyBody().strength(-300).distanceMax(500))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     updateGraph();
@@ -112,7 +117,7 @@
 
     const node = g.selectAll<SVGCircleElement, Node>('circle').data(nodes, (d) => d.id);
 
-    const imageSize = 40;
+    const imageSize = 30;
     node.join(
       (enter) => {
         const enterNode = enter.append('g');

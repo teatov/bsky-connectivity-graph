@@ -17,9 +17,9 @@ export async function getProfile(handle: string) {
   }
 }
 
-export async function getFollows(handle: string) {
+export async function getFollows(handle: string, limit: number, cursor?: string) {
   try {
-    const response = await agent.getFollows({ actor: handle });
+    const response = await agent.getFollows({ actor: handle, limit, cursor });
     if (response.success) {
       return response.data;
     } else {
