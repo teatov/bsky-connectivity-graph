@@ -19,12 +19,6 @@
   }
 }
 
-.graph-node {
-  fill: #69b3a2;
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
-
 .graph-link {
   stroke: var(--color-foreground);
   stroke-opacity: 0.5;
@@ -35,7 +29,7 @@
 
 .graph-label {
   fill: var(--color-foreground);
-  font-size: 12px;
+  font-size: 10px;
   text-anchor: middle;
   z-index: 1000;
 }

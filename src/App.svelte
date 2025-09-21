@@ -40,7 +40,7 @@
       return;
     }
 
-    initNodes.push({ id: profile.handle });
+    initNodes.push({ id: profile.handle, image: profile.avatar });
     stage = 'graph';
 
     const follows = await getFollows(handle);
@@ -52,6 +52,7 @@
 
     const newNodes: Node[] = follows.follows.map((profile) => ({
       id: profile.handle,
+      image: profile.avatar,
     }));
     const newLinks: Link[] = follows.follows.map((profile) => ({
       source: handle,

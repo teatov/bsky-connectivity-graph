@@ -1,6 +1,7 @@
 <script lang="ts" module>
   export type Node = {
     id: string;
+    image?: string;
     x?: number;
     y?: number;
     vx?: number;
@@ -30,7 +31,6 @@
   let simulation: d3.Simulation<Node, Link>;
 
   export function addData(newNodes: Node[], newLinks: Link[]) {
-    console.log(newNodes);
     links = [...links, ...newLinks];
     nodes = [...nodes, ...newNodes];
     updateGraph();
@@ -86,7 +86,7 @@
           .id((d) => d.id)
           .distance(100),
       )
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('charge', d3.forceManyBody().strength(-1000))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     updateGraph();
@@ -112,23 +112,29 @@
 
     const node = g.selectAll<SVGCircleElement, Node>('circle').data(nodes, (d) => d.id);
 
+    const imageSize = 40;
     node.join(
-      (enter) => enter.append('circle').attr('r', 10).classed('graph-node', true),
-      (update) => update,
-      (exit) => exit.remove(),
-    );
+      (enter) => {
+        const enterNode = enter.append('g');
 
-    const label = g.selectAll<SVGTextElement, Node>('text').data(nodes, (d) => d.id);
+        enterNode
+          .append('image')
+          .attr('xlink:href', (d) => d.image ?? '')
+          .attr('x', -imageSize / 2)
+          .attr('y', -imageSize / 2)
+          .attr('height', imageSize)
+          .attr('width', imageSize);
 
-    label.join(
-      (enter) =>
-        enter
+        enterNode
           .append('text')
           .raise()
           .text((d) => d.id)
-          .attr('dy', -12)
-          .classed('graph-label', true),
-      (update) => update.text((d) => d.id),
+          .attr('dy', imageSize / 2 + 10)
+          .classed('graph-label', true);
+
+        return enterNode;
+      },
+      (update) => update,
       (exit) => exit.remove(),
     );
 
@@ -139,13 +145,9 @@
         .attr('x2', (d) => (typeof d.target === 'string' ? 0 : (d.target.x ?? 0)))
         .attr('y2', (d) => (typeof d.target === 'string' ? 0 : (d.target.y ?? 0)));
 
-      g.selectAll<SVGCircleElement, Node>('circle')
-        .attr('cx', (d) => d.x ?? 0)
-        .attr('cy', (d) => d.y ?? 0);
-
-      g.selectAll<SVGTextElement, Node>('text')
-        .attr('x', (d) => d.x ?? 0)
-        .attr('y', (d) => d.y ?? 0);
+      g.selectAll<SVGCircleElement, Node>('g').attr('transform', (d) => `translate(${d.x},${d.y})`);
+      // .attr('cx', (d) => d.x ?? 0)
+      // .attr('cy', (d) => d.y ?? 0);
     });
     (simulation.force('link') as d3.ForceLink<Node, Link>).links(links);
 
