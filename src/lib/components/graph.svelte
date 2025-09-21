@@ -82,6 +82,10 @@
       .classed('graph-arrowhead', true);
 
     const { width, height } = getContainerSize();
+    svg
+      .transition()
+      .duration(0)
+      .call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2));
     simulation = d3
       .forceSimulation<Node, Link>()
       .force(
@@ -89,10 +93,11 @@
         d3
           .forceLink<Node, Link>()
           .id((d) => d.id)
-          .distance(200),
+          .distance(250),
       )
-      .force('charge', d3.forceManyBody().strength(-400))
-      .force('center', d3.forceCenter(width / 2, height / 2));
+      .force('charge', d3.forceManyBody().strength(-150).distanceMax(250))
+      .force('center', d3.forceCenter(0, 0))
+      .force('collide', d3.forceCollide().radius(25));
 
     updateGraph();
   });
@@ -115,14 +120,20 @@
       (exit) => exit.remove(),
     );
 
-    const node = g.selectAll<SVGCircleElement, Node>('circle').data(nodes, (d) => d.id);
+    const size = 40;
 
-    const imageSize = 40;
-    node.join(
-      (enter) => {
-        const enterNode = enter.append('g').call(
+    const image = g.selectAll<SVGImageElement, Node>('image').data(nodes, (d) => d.id);
+
+    image.join(
+      (enter) =>
+        enter
+          .append('image')
+          .attr('xlink:href', (d) => d.image ?? '')
+          .attr('height', size)
+          .attr('width', size)
+          .call(
             d3
-              .drag<SVGGElement, Node>()
+              .drag<SVGImageElement, Node>()
               .on('start', (event, d) => {
                 if (!simulation) return;
                 if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -139,27 +150,22 @@
                 (d as any).fx = null;
                 (d as any).fy = null;
               }),
-          );
+          ),
+      (update) => update,
+      (exit) => exit.remove(),
+    );
 
-        enterNode
-          .append('image')
-          .attr('xlink:href', (d) => d.image ?? '')
-          .attr('x', -imageSize / 2)
-          .attr('y', -imageSize / 2)
-          .attr('height', imageSize)
-          .attr('width', imageSize)
-          ;
+    const label = g.selectAll<SVGTextElement, Node>('text').data(nodes, (d) => d.id);
 
-        enterNode
+    label.join(
+      (enter) =>
+        enter
           .append('text')
           .raise()
           .text((d) => d.id)
-          .attr('dy', imageSize / 2 + 14)
-          .classed('graph-label', true);
-
-        return enterNode;
-      },
-      (update) => update,
+          .attr('dy', size / 2 + 14)
+          .classed('graph-label', true),
+      (update) => update.text((d) => d.id),
       (exit) => exit.remove(),
     );
 
@@ -170,9 +176,13 @@
         .attr('x2', (d) => (typeof d.target === 'string' ? 0 : (d.target.x ?? 0)))
         .attr('y2', (d) => (typeof d.target === 'string' ? 0 : (d.target.y ?? 0)));
 
-      g.selectAll<SVGCircleElement, Node>('g').attr('transform', (d) => `translate(${d.x},${d.y})`);
-      // .attr('cx', (d) => d.x ?? 0)
-      // .attr('cy', (d) => d.y ?? 0);
+      g.selectAll<SVGImageElement, Node>('image')
+        .attr('x', (d) => (d.x ?? 0) - size / 2)
+        .attr('y', (d) => (d.y ?? 0) - size / 2);
+
+      g.selectAll<SVGTextElement, Node>('text')
+        .attr('x', (d) => d.x ?? 0)
+        .attr('y', (d) => d.y ?? 0);
     });
     (simulation.force('link') as d3.ForceLink<Node, Link>).links(links);
 
@@ -198,6 +208,6 @@
 </script>
 
 <div bind:this={container} class="h-full w-full"></div>
-<div class="absolute top-0 left-0 p-4">
+<div class="absolute top-0 left-0 z-50 p-4">
   <button onclick={fitGraph}>Fit to screen</button>
 </div>

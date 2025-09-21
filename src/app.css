@@ -19,12 +19,18 @@
   }
 }
 
+.graph-node {
+  fill: #69b3a2;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
 .graph-link {
   stroke: var(--color-foreground);
   stroke-opacity: 0.15;
   stroke-width: 2px;
   z-index: -1000;
-  marker-end: url(#arrowhead)
+  marker-end: url(#arrowhead);
 }
 
 .graph-label {
