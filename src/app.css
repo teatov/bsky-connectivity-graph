@@ -20,9 +20,7 @@
 }
 
 .graph-node {
-  fill: #69b3a2;
-  stroke: #fff;
-  stroke-width: 1.5px;
+  cursor: move;
 }
 
 .graph-link {

@@ -131,6 +131,7 @@
           .attr('xlink:href', (d) => d.image ?? '')
           .attr('height', size)
           .attr('width', size)
+          .classed('graph-node', true)
           .call(
             d3
               .drag<SVGImageElement, Node>()
