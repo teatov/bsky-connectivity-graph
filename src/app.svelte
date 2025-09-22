@@ -23,6 +23,7 @@
 
   type QueueItem = { handle: string; depth: number; image?: string };
   const queue: QueueItem[] = [];
+  const allHandles = new Set<string>();
   const addedHandles = new Set<string>();
   const visitedHandles = new Set<string>();
   const addedLinks = new Set<string>();
@@ -59,6 +60,7 @@
 
     initNodes.push({ id: initHandle, image: profile.avatar });
     addedHandles.add(initHandle);
+    allHandles.add(initHandle);
     stage = 'graph';
 
     queue.push({ handle: initHandle, depth: 0, image: profile.avatar });
@@ -99,6 +101,7 @@
             depth: source.depth + 1,
             image: target.avatar,
           });
+          allHandles.add(target.handle);
         }
       });
 
@@ -116,7 +119,7 @@
         if (source.handle === initHandle) {
           return;
         }
-        if (source.depth >= maxDepth && !addedHandles.has(target.handle)) {
+        if (source.depth >= maxDepth && !allHandles.has(target.handle)) {
           return;
         }
 
