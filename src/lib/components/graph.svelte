@@ -309,10 +309,10 @@
       <tbody>
         {#each stats as stat}
           <tr class="m-0 border-t p-0 odd:bg-secondary/15">
-            <th class="border px-2 py-1">{stat.id}</th>
-            <td class="border px-2 py-1">{stat.in}</td>
-            <td class="border px-2 py-1">{stat.out}</td>
-            <td class="border px-2 py-1">{stat.total}</td>
+            <td class="border px-2 py-1">{stat.id}</td>
+            <td class="border px-2 py-1 text-right">{stat.in}</td>
+            <td class="border px-2 py-1 text-right">{stat.out}</td>
+            <td class="border px-2 py-1 text-right">{stat.total}</td>
           </tr>
         {/each}
       </tbody>

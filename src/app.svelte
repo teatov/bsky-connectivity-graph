@@ -202,9 +202,8 @@
 
   {#if isFetching}
     <div class="pointer-events-none absolute top-0 right-0 left-0 p-4 text-center">
-      ({currentQueueLength} remaining) Fetching follows for:<br />{currentHandle}...{'.'.repeat(
-        currentPage,
-      )}
+      {currentQueueLength} remaining<br />Fetching follows for:<br
+      />{currentHandle}{'.'.repeat(currentPage)}
     </div>
   {/if}
   {#if errorMessage}
