@@ -93,7 +93,7 @@
         d3
           .forceLink<Node, Link>()
           .id((d) => d.id)
-          .distance(250),
+          .distance(300),
       )
       .force('charge', d3.forceManyBody().strength(-150).distanceMax(250))
       .force('center', d3.forceCenter(0, 0))
