@@ -191,7 +191,11 @@
         {#if errorMessage}{errorMessage}{/if}
       </p>
       <p class="mt-4">
-        Made by <a href="https://teatov.xyz" class="font-semibold underline">Teatov</a>.
+        Made by <a href="https://teatov.xyz" class="font-semibold underline">Teatov</a>. Source code
+        available on
+        <a href="https://github.com/teatov/bsky-connectivity-graph" class="font-semibold underline"
+          >GitHub</a
+        >.
       </p>
     </div>
   </main>
@@ -202,8 +206,9 @@
 
   {#if isFetching}
     <div class="pointer-events-none absolute top-0 right-0 left-0 p-4 text-center">
-      {currentQueueLength} remaining<br />Fetching follows for:<br
-      />{currentHandle}{'.'.repeat(currentPage)}
+      {currentQueueLength} remaining<br />Fetching follows for:<br />{currentHandle}{'.'.repeat(
+        currentPage,
+      )}
     </div>
   {/if}
   {#if errorMessage}
