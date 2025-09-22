@@ -187,6 +187,9 @@
         {#if infoMessage}{infoMessage}{/if}
         {#if errorMessage}{errorMessage}{/if}
       </p>
+      <p class="mt-4">
+        Made by <a href="https://teatov.xyz" class="font-semibold underline">Teatov</a>.
+      </p>
     </div>
   </main>
 {/if}
