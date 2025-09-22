@@ -135,6 +135,7 @@
           .attr('xlink:href', (d) => d.image ?? '')
           .attr('height', size)
           .attr('width', size)
+          .attr('opacity', 1)
           .classed('graph-node', true)
           .call(
             d3
@@ -170,11 +171,34 @@
               )
               .attr('display', 'block')
               .attr('stroke-opacity', 0.5);
+            g.selectAll<SVGImageElement, Node>('image')
+              .attr('opacity', 0.25)
+              .filter(
+                (dt) =>
+                  dt.id === d.id ||
+                  links.some(
+                    (l) =>
+                      ((typeof l.source === 'string'
+                        ? l.source === d.id
+                        : (l.source as Node).id === d.id) &&
+                        (typeof l.target === 'string'
+                          ? l.target === dt.id
+                          : (l.target as Node).id === dt.id)) ||
+                      ((typeof l.source === 'string'
+                        ? l.source === dt.id
+                        : (l.source as Node).id === dt.id) &&
+                        (typeof l.target === 'string'
+                          ? l.target === d.id
+                          : (l.target as Node).id === d.id)),
+                  ),
+              )
+              .attr('opacity', 1);
           })
           .on('mouseleave', (evt) => {
             g.selectAll<SVGLineElement, Link>('line')
               .attr('display', 'block')
               .attr('stroke-opacity', 0.15);
+            g.selectAll<SVGImageElement, Node>('image').attr('opacity', 1);
           }),
       (update) => update,
       (exit) => exit.remove(),
