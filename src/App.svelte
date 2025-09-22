@@ -5,7 +5,7 @@
   type Stage = 'start' | 'graph';
 
   let stage = $state<Stage>('start');
-  let initHandle = $state<string>('teatov.xyz');
+  let initHandle = $state<string>('');
 
   let errorMessage = $state<string | null>(null);
   let infoMessage = $state<string | null>(null);
@@ -37,6 +37,9 @@
   }
 
   async function startFetching() {
+    if (initHandle.startsWith('@')) {
+      initHandle = initHandle.slice(1);
+    }
     if (!initHandle) {
       resetState();
       errorMessage = 'Enter something!';
@@ -46,11 +49,11 @@
     resetState();
     isFetching = true;
     infoMessage = `Checking ${initHandle}...`;
-    const profile = await getProfile(initHandle);
+    const { profile, error } = await getProfile(initHandle);
 
     if (!profile) {
       resetState();
-      errorMessage = `Error fetching profile for ${initHandle}`;
+      errorMessage = `Error fetching profile for ${initHandle}: ${error}`;
       return;
     }
 
@@ -80,10 +83,10 @@
 
     while (!finished) {
       currentHandle = source.handle;
-      const follows = await getFollows(source.handle, limit, cursor);
+      const { follows, error } = await getFollows(source.handle, limit, cursor);
       if (!follows) {
         resetState();
-        errorMessage = `Error fetching follows for ${source.handle}`;
+        errorMessage = `Error fetching follows for ${source.handle}: ${error}`;
         return;
       }
 
@@ -151,27 +154,36 @@
 
 {#if stage === 'start'}
   <main class="flex h-full items-center justify-center">
-    <div class="p-4">
-      <div>
+    <div class="max-w-md p-4">
+      <p class="mb-4">
+        This thing checks your Bluesky follows, analyzes which of them follow each other, and builds
+        an interactive graph out of that.
+      </p>
+      <p class="mb-4">This is fully client-side, your data doesn't go anywhere!</p>
+      <p class="mb-4">This may take a while, so be ready.</p>
+      <div class="flex w-full flex-col gap-2 sm:flex-row">
         <input
           type="text"
-          class="border border-secondary p-2 placeholder-secondary"
+          class="w-full border border-secondary p-2 placeholder-secondary disabled:cursor-not-allowed"
           bind:value={initHandle}
-          placeholder="Enter the handle here..."
+          placeholder="Enter the handle..."
           onkeypress={(event) => {
             if (event.key === 'Enter') {
               startFetching();
             }
           }}
           disabled={isFetching}
+          autocomplete="on"
+          name="bsky-handle"
+          id="bsky-handle"
         />
         <button
-          class="bg-foreground p-2 text-background"
+          class="shrink-0 bg-foreground px-4 py-2 text-background disabled:cursor-not-allowed"
           onclick={startFetching}
-          disabled={isFetching}>Build the graph!</button
+          disabled={isFetching}>Analyze!</button
         >
       </div>
-      <p class="min-h-6 {errorMessage ? 'text-danger' : ''}">
+      <p class="min-h-16 {errorMessage ? 'text-danger' : ''}">
         {#if infoMessage}{infoMessage}{/if}
         {#if errorMessage}{errorMessage}{/if}
       </p>
@@ -190,7 +202,7 @@
     </div>
   {/if}
   {#if errorMessage}
-    <div class="absolute top-0 right-0 left-0 p-4 text-center text-danger">
+    <div class="absolute top-16 right-0 left-0 p-4 text-center text-danger">
       {errorMessage}
     </div>
   {/if}
