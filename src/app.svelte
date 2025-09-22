@@ -159,7 +159,7 @@
         This thing checks your Bluesky follows, analyzes which of them follow each other, and builds
         an interactive graph out of that.
       </p>
-      <p class="mb-4">This is fully client-side, your data doesn't go anywhere!</p>
+      <p class="mb-4">This is fully client-side, your data doesn't go anywhere.</p>
       <p class="mb-4">This may take a while, so be ready.</p>
       <div class="flex w-full flex-col gap-2 sm:flex-row">
         <input
