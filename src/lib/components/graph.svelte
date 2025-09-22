@@ -115,7 +115,11 @@
       .data(links, (d: any) => `${d.source}-${d.target}`);
 
     link.join(
-      (enter) => enter.insert('line', ':first-child').classed('graph-link', true),
+      (enter) =>
+        enter
+          .insert('line', ':first-child')
+          .attr('stroke-opacity', 0.15)
+          .classed('graph-link', true),
       (update) => update,
       (exit) => exit.remove(),
     );
@@ -164,10 +168,13 @@
                     ? l.target === d.id
                     : (l.target as Node).id === d.id),
               )
-              .attr('display', 'block');
+              .attr('display', 'block')
+              .attr('stroke-opacity', 0.5);
           })
           .on('mouseleave', (evt) => {
-            g.selectAll<SVGLineElement, Link>('line').attr('display', 'block');
+            g.selectAll<SVGLineElement, Link>('line')
+              .attr('display', 'block')
+              .attr('stroke-opacity', 0.15);
           }),
       (update) => update,
       (exit) => exit.remove(),
