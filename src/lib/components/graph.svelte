@@ -282,32 +282,22 @@
     <table class="mt-16">
       <thead>
         <tr class="even:bg-muted m-0 border-t p-0">
-          <th
-            scope="col"
-            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
-            >Handle</th
-          >
-          <th
-            scope="col"
-            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+          <th class="border px-2 py-1 font-bold">Handle</th>
+          <th class="border px-2 py-1 font-bold"
             ><button class="underline" onclick={() => (sortBy = 'in')}
               >In{#if sortBy === 'in'}
                 ▼
               {/if}</button
             ></th
           >
-          <th
-            scope="col"
-            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+          <th class="border px-2 py-1 font-bold"
             ><button class="underline" onclick={() => (sortBy = 'out')}
               >Out{#if sortBy === 'out'}
                 ▼
               {/if}</button
             ></th
           >
-          <th
-            scope="col"
-            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+          <th class="border px-2 py-1 font-bold"
             ><button class="underline" onclick={() => (sortBy = 'total')}
               >Total{#if sortBy === 'total'}
                 ▼
@@ -318,23 +308,11 @@
       </thead>
       <tbody>
         {#each stats as stat}
-          <tr class="m-0 border-t p-0 even:bg-secondary/10">
-            <th
-              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
-              >{stat.id}</th
-            >
-            <td
-              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
-              >{stat.in}</td
-            >
-            <td
-              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
-              >{stat.out}</td
-            >
-            <td
-              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
-              >{stat.total}</td
-            >
+          <tr class="m-0 border-t p-0 odd:bg-secondary/15">
+            <th class="border px-2 py-1">{stat.id}</th>
+            <td class="border px-2 py-1">{stat.in}</td>
+            <td class="border px-2 py-1">{stat.out}</td>
+            <td class="border px-2 py-1">{stat.total}</td>
           </tr>
         {/each}
       </tbody>
