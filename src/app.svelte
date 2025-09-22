@@ -167,7 +167,7 @@
       <div class="flex w-full flex-col gap-2 sm:flex-row">
         <input
           type="text"
-          class="w-full border border-secondary p-2 placeholder-secondary disabled:cursor-not-allowed"
+          class="w-full border p-2 placeholder-secondary disabled:cursor-not-allowed"
           bind:value={initHandle}
           placeholder="Enter the handle..."
           onkeypress={(event) => {

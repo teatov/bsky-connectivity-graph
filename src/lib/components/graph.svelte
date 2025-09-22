@@ -21,8 +21,10 @@
   import { onMount } from 'svelte';
 
   let { initNodes, initLinks }: { initNodes: Node[]; initLinks: Link[] } = $props();
-  let nodes: Node[] = [];
-  let links: Link[] = [];
+  let nodes = $state<Node[]>([]);
+  let links = $state<Link[]>([]);
+  let showStats = $state<boolean>(false);
+  let sortBy = $state<'total' | 'in' | 'out'>('total');
 
   let container: HTMLDivElement;
   let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
@@ -257,6 +259,112 @@
 </script>
 
 <div bind:this={container} class="h-full w-full"></div>
+{#if showStats}
+  {@const stats = nodes
+    .map((d) => ({
+      id: d.id,
+      total: links.filter(
+        (l) =>
+          (typeof l.source === 'string' ? l.source === d.id : (l.source as Node).id === d.id) ||
+          (typeof l.target === 'string' ? l.target === d.id : (l.target as Node).id === d.id),
+      ).length,
+      in: links.filter((l) =>
+        typeof l.target === 'string' ? l.target === d.id : (l.target as Node).id === d.id,
+      ).length,
+      out: links.filter((l) =>
+        typeof l.source === 'string' ? l.source === d.id : (l.source as Node).id === d.id,
+      ).length,
+    }))
+    .sort((a, b) =>
+      sortBy === 'total' ? b.total - a.total : sortBy === 'in' ? b.in - a.in : b.out - a.out,
+    )}
+  <div class="absolute top-0 bottom-0 left-0 max-w-screen overflow-auto border-r bg-background p-4">
+    <table class="mt-16">
+      <thead>
+        <tr class="even:bg-muted m-0 border-t p-0">
+          <th
+            scope="col"
+            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+            >Handle</th
+          >
+          <th
+            scope="col"
+            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+            ><button class="underline" onclick={() => (sortBy = 'in')}
+              >In{#if sortBy === 'in'}
+                ▼
+              {/if}</button
+            ></th
+          >
+          <th
+            scope="col"
+            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+            ><button class="underline" onclick={() => (sortBy = 'out')}
+              >Out{#if sortBy === 'out'}
+                ▼
+              {/if}</button
+            ></th
+          >
+          <th
+            scope="col"
+            class="border px-2 py-1 text-left font-bold [&[align=center]]:text-center [&[align=right]]:text-right"
+            ><button class="underline" onclick={() => (sortBy = 'total')}
+              >Total{#if sortBy === 'total'}
+                ▼
+              {/if}</button
+            ></th
+          >
+        </tr>
+      </thead>
+      <tbody>
+        {#each stats as stat}
+          <tr class="m-0 border-t p-0 even:bg-secondary/10">
+            <th
+              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
+              >{stat.id}</th
+            >
+            <td
+              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
+              >{stat.in}</td
+            >
+            <td
+              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
+              >{stat.out}</td
+            >
+            <td
+              class="border px-2 py-1 text-left [&[align=center]]:text-center [&[align=right]]:text-right"
+              >{stat.total}</td
+            >
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+{/if}
+<div class="absolute top-0 left-0 z-50 p-4">
+  <button
+    onclick={() => (showStats = !showStats)}
+    title="Show stats"
+    aria-label="Show stats"
+    class="bg-foreground p-2 text-background"
+    ><svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+        d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"
+      /><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path
+        d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"
+      /><path d="M4 20h14" /></svg
+    ></button
+  >
+</div>
 <div class="absolute top-0 right-0 z-50 p-4">
   <button
     onclick={fitGraph}
