@@ -151,7 +151,24 @@
                 (d as any).fx = null;
                 (d as any).fy = null;
               }),
-          ),
+          )
+          .on('mouseenter', (evt, d) => {
+            g.selectAll<SVGLineElement, Link>('line')
+              .attr('display', 'none')
+              .filter(
+                (l) =>
+                  (typeof l.source === 'string'
+                    ? l.source === d.id
+                    : (l.source as Node).id === d.id) ||
+                  (typeof l.target === 'string'
+                    ? l.target === d.id
+                    : (l.target as Node).id === d.id),
+              )
+              .attr('display', 'block');
+          })
+          .on('mouseleave', (evt) => {
+            g.selectAll<SVGLineElement, Link>('line').attr('display', 'block');
+          }),
       (update) => update,
       (exit) => exit.remove(),
     );
